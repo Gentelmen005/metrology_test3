@@ -9,19 +9,44 @@ def init_vars(data: dict):
     return v, subs
 
 
-def calculate(func, absolute_errors, student_coeff, vars: dict, subs: dict):
+def calculate(type_, func, errors, coeff, vars: dict, subs: dict, std_deviation, student_coeff):
     f = func.evalf(subs=subs)
-    print("Считаем исходное выражение: {0} = {1}".format(func, f))
+    print(f"Считаем исходное выражение: {func} = {f}")
 
     print("\nСчитаем производные:")
     func_diffs = calculate_diffs(func, vars, subs)
     
-    result = [(func_diffs[i] * absolute_errors[i]) ** 2 for i in range(len(func_diffs))]
+    result = [(func_diffs[i] * errors[i]) ** 2 for i in range(len(func_diffs))]
+    err = coeff * sqrt(sum(result))
 
-    total_err = student_coeff * sqrt(sum(result))
-    print("\nОбщая погрешность: {0}".format(total_err))
+    if type_ == 0:
+        print(f"\nОбщая погрешность: {err}")
+        print(f"\nРезультат: {f} +- {err}")
 
-    print("\nРезультат: {0} +- {1}".format(f, total_err))
+    elif type_ == 1:
+        print(f"\nСуммарная систематическая погрешность: {err}")
+
+        sE = sqrt(sum([(func_diffs[i] * std_deviation[i]) ** 2 for i in range(len(func_diffs))]))
+        print(f"\nsE = {sE}")
+
+        s0 = sqrt(1 / 3 * sum([(func_diffs[i] * errors[i]) ** 2 for i in range(len(func_diffs))]))
+        print(f"\ns0 = {s0}")
+
+        eE = student_coeff * sE
+        print(f"\nСуммарная случайная погрешность, eE = {eE}")
+
+        sGen = sqrt(sE ** 2 + s0 ** 2)
+        print(f"\nS общ = {sGen}")
+
+        Ke = (eE + err) / (sE + s0)
+        print(f"\nКе = {Ke}")
+
+        total_err = Ke * sGen
+        print(f"\nОбщая погрешность = {total_err}")
+
+        print(f"\nРезультат = {f} +- {total_err}")
+
+        
 
 
 def calculate_diffs(func, vars, subs):
@@ -30,6 +55,6 @@ def calculate_diffs(func, vars, subs):
     for v in vars:
         f = diff(func, vars[v])
         result.append(f.evalf(subs=subs))
-        print("dF/d{0} = {1} = {2}".format(v, f, result[-1]))
+        print(f"dF/d{v} = {f} = {result[-1]}")
 
     return result

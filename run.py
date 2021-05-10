@@ -2,43 +2,81 @@ from indirect_measurement import calculate, init_vars
 from sympy.parsing.sympy_parser import parse_expr
 
 
-def main():
+def get_essential_data():
     data = {}
-    absolute_errors = []
-
     N = int(input("Введите кол-во переменных: "))
     
-    print('\n')
+    print()
 
     for _ in range(N):
         var = input("Введите название переменной: ")
         data[var] = None
 
-    print('\n')
+    print()
 
     for var in data.keys():
         value = float(input(f"Введите значение для переменной {var}: "))
         data[var] = value
 
-    print('\n')
+    return data
+
+
+def get_errors(type_: int, data: dict):
+    errors = []
+
+    if type_ == 0:
+        
+        for var in data.keys():
+            err = float(input(f"Введите абсолютную погрешность для переменной {var}: "))
+            errors.append(err)
+
+    elif type_ == 1:
+
+        for var in data.keys():
+            err = float(input(f"Введите систематическую погрешность для переменной {var}: "))
+            errors.append(err)
+
+    return errors
+
+
+def get_standard_deviation(data):
+    std_deviation = []
 
     for var in data.keys():
-        err = float(input(f"Введите абсолютное погрешность для переменной {var}: "))
-        absolute_errors.append(err)
+        std_dev = float(input(f"Введите СКО для переменной {var}: "))
+        std_deviation.append(std_dev)
 
-    print('\n')
+    return std_deviation
 
-    v, subs = init_vars(data)
+
+def main():
+    type_ = int(input("Введите тип задачи: "))
+    print()
+
+    data = get_essential_data()
+    print()
+
+    errors = get_errors(type_, data)
+    print()
+
+    std_deviation = None
+    if type_ == 1:
+        std_deviation = get_standard_deviation(data)
+
+    print()
     func = input("Введите уравнение: ")
     f = parse_expr(func)
 
-    print('\n')
+    print()
+    coeff = float(input("Введите значение коэффицента доверительной вероятности: "))
+    
+    print()
+    student_coeff = None
+    if type_ == 1:
+        student_coeff = float(input("Введите значение коэффицента Стьюдента: "))
 
-    student_coeff = float(input("Введите значение коэффицента доверительной вероятности: "))
-
-    print('\n')
-
-    calculate(f, absolute_errors, student_coeff, v, subs)
+    vars, subs = init_vars(data)
+    calculate(type_, f, errors, coeff, vars, subs, std_deviation, student_coeff)
 
 
 if __name__ == "__main__":
